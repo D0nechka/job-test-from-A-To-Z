@@ -1,0 +1,10 @@
+.product-card-delete {
+    border: none;
+    background: none;
+
+    color: white;
+    background: rgb(245, 49, 49);
+    cursor: pointer;
+    padding: 10px;
+    margin-top: 10px;
+}

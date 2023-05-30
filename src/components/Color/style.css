@@ -1,0 +1,19 @@
+.color {
+    background: none;
+    border: none;
+    
+    background: rgb(45, 49, 249);
+    color: white;
+    width: 100px;
+    height: 40px;
+    font-size: 22;
+    margin-right: 20px;
+    cursor: pointer;
+    border-radius: 30px;
+}
+
+.color:disabled {
+    background: darkblue;
+    cursor: default;
+    opacity: 0.5;
+}

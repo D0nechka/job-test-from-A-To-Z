@@ -1,0 +1,18 @@
+.basket-products {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    position: relative;
+}
+
+.basket-link {
+    position: absolute;
+    top: 50px;
+    left: 30%;
+    font-size: 30px;
+    text-decoration: none;
+    z-index: 100;
+    color: blue;
+}

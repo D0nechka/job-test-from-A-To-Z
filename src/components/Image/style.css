@@ -1,0 +1,13 @@
+.image {
+    width: 100px;
+    height: 150px;
+}
+
+.button-image {
+    cursor: pointer;
+}
+
+.button-image:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
