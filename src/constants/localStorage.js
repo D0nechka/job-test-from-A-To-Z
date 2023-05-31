@@ -1,0 +1,1 @@
+export const LOCAL_STORAGE_BASKET = 'basket_storage'

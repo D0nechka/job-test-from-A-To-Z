@@ -3,44 +3,71 @@ import { Link, useParams } from 'react-router-dom';
 import { observer } from 'mobx-react';
 import { Images, Colors, Sizes } from '../../components';
 import { rootStore } from '../../store';
-import { getProductColor, getSize } from '../../services/api';
+import { getProduct, getProductColor, getSize } from '../../services/api';
+import { ProductContext } from '../../context';
 import './style.css'
 
 export const Product = observer(() => {
     const params = useParams()
 
-    const [isDisabled, setIsDisabled] = useState(false)
+    const [currentProduct, setCurrentProducts] = useState(null)
+    const [currentSize, setCurrentSize] = useState(null)
+    const [currentColor, setCurrentColor] = useState(null)
+    const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState('')
 
-    const product = rootStore.productStore.store.product
-    const currentColor = rootStore.productStore.store.currentColor
-    const currentSize = rootStore.productStore.store.currentSize
-    const isLoading = rootStore.productStore.store.isLoadig
     const productBasket = rootStore.basketStore.store.productsInBasket
-    const isInBasket = rootStore.basketStore.isInBasket(params.id, currentColor?.id, currentSize)
+    const isInBasket = 
+        rootStore.basketStore.isInBasket(currentProduct?.id,  currentColor?.id, currentSize?.id)
 
+    const handleAdd = () => {
+        rootStore.basketStore.addProduct({
+            product: {
+                name: currentProduct?.name,
+                price: currentColor?.price,
+                color: {
+                    name: currentColor?.name,
+                    id: currentColor?.id
+                },
+                size: {
+                    label: currentSize?.label,
+                    id: currentSize?.id
+                },
+                image: currentColor?.images[0],
+                id: currentProduct?.id,
+                delId: Math.random().toString()
+            }
+        })
+    }
 
-    const handleAdd = async () => {
-        try {
-            setIsDisabled(true)
+    const handleChangeSize = (size) => {
+        setError('')
 
-            const gettingColor = await getProductColor(product?.id, currentColor?.id)
-            const gettingSize = await getSize(currentSize)
+        getSize(size)
+            .then((size) => setCurrentSize(size))
+            .catch((e) => setError(e?.message))
+    }
 
-            rootStore.basketStore.addProduct({
-                product,
-                size: gettingSize,
-                color: gettingColor,
+    const handleChangeColor = (colorId) => {
+        setError('')
+
+        getProductColor(currentProduct?.id, colorId)
+            .then((color) => {
+                setCurrentColor(color)
+                setCurrentSize(null)
             })
-        } catch (e) {
-            console.log(e)
-        } finally {
-            setIsDisabled(false)
-        }
+            .catch((e) => setError(e?.message))
     }
 
     useEffect(() => {
         if(params?.id) {
-            rootStore.productStore.fetchProduct(params.id)
+            setIsLoading(true)
+            getProduct(params.id)
+                .then((data) => {
+                    setCurrentProducts(data)
+                    setCurrentColor(data.colors[0])
+                })
+                .finally(() => setIsLoading(false))
         } 
     }, [params.id])
 
@@ -48,31 +75,51 @@ export const Product = observer(() => {
         return <div className='product-loader'>Loading...</div>
     }
 
+    if(!currentProduct && !isLoading) {
+        return <span style={{color: 'red'}}>Товар не найден</span>
+    }
+
+    const valueContext = {
+        currentSize,
+        handleChangeSize,
+        currentColor,
+        currentProduct,
+        handleChangeColor
+    }
+
+    const isDisabled = 
+        !currentColor?.id 
+        || !currentSize 
+        || !currentProduct?.id
+
     return (
-        <div className='product'>
-            <div className='product-links'>
-                <Link className='product-link' to="/">На главную</Link>
-                <Link className='product-link' to="/basket">В корзину (сейчас у вас {productBasket.length} товаров)</Link>
+        <ProductContext.Provider value={valueContext}>
+            <div className='product'>
+                <div className='product-links'>
+                    <Link className='product-link' to="/">На главную</Link>
+                    <Link className='product-link' to="/basket">В корзину (сейчас у вас {productBasket.length} товаров)</Link>
+                </div>
+                <span className='product-name'>{currentProduct?.name}</span>
+                <div className='product-content'>
+                    {currentColor && (
+                        <>
+                            <Images />
+                            <div className='product-info'>
+                                <span className='product-desc'>{currentColor.description}</span>
+                                <span className='product-price'>{currentColor.price} Рублей</span>
+                                <Sizes />
+                            </div>
+                        </>
+                    )}
+                    <Colors />
+                </div>
+                <button 
+                    className='product-add' 
+                    onClick={handleAdd} 
+                    disabled={isInBasket || isDisabled}
+                >Добавить {isInBasket && '(В корзине)'}</button>
+                {!!error.length && (<span style={{color: 'red'}}>{error}</span>)}
             </div>
-            <span className='product-name'>{product?.name}</span>
-            <div className='product-content'>
-                {currentColor && (
-                    <>
-                        <Images images={currentColor?.images} />
-                        <div className='product-info'>
-                            <span className='product-desc'>{currentColor.description}</span>
-                            <span className='product-price'>{currentColor.price} Рублей</span>
-                            <Sizes sizes={currentColor.sizes} />
-                        </div>
-                    </>
-                )}
-                <Colors colors={product?.colors} currentColorId={currentColor?.id} />
-            </div>
-            <button 
-                className='product-add' 
-                onClick={handleAdd} 
-                disabled={isDisabled || isInBasket}
-            >Добавить {isInBasket && '(В корзине)'}</button>
-        </div>
+        </ProductContext.Provider>
     )
 });

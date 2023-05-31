@@ -1,25 +1,26 @@
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { Image } from "../Image/Image"
+import { ProductContext } from "../../context";
 import './style.css'
 
-export const Images = (props) => {
-    const {images} = props
+export const Images = () => {
+    const {currentColor} = useContext(ProductContext)
 
-    const [currentImage, setCurrentImage] = useState(images[0])
+    const [currentImage, setCurrentImage] = useState(currentColor?.images[0])
 
     const changeImage = (image) => {
         setCurrentImage(image)
     }
 
     useEffect(() => {
-        setCurrentImage(images[0])
-    }, [images])
+        setCurrentImage(currentColor?.images[0])
+    }, [currentColor?.images])
 
     return (
         <div className="images">
             <img src={currentImage} className="images__current-image" alt="current"/>
             <div className="images__list">
-                {images.map((image) => (
+                {currentColor?.images.map((image) => (
                     <Image
                         key={image}
                         img={image}

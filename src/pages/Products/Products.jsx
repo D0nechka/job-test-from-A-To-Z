@@ -1,16 +1,18 @@
-import React, { useEffect } from 'react'
-import { rootStore } from '../../store'
-import { observer } from 'mobx-react';
+import React, { useEffect, useState } from 'react'
 import { ProductCard } from '../../components';
 import { Link } from 'react-router-dom';
+import { getProducts } from '../../services/api';
 import './style.css'
 
-export const Products = observer(() => {
-    const products = rootStore.productsStore.store.products
-    const isLoading = rootStore.productsStore.store.isLoadig
+export const Products = () => {
+    const [products, setProducts] = useState([])
+    const [isLoading, setIsLoading] = useState(false)
 
     useEffect(() => {
-        rootStore.productsStore.fetchProducts()
+        setIsLoading(true)
+        getProducts()
+            .then((data) => setProducts(data))
+            .finally(() => setIsLoading(false))
     }, [])
 
     if(isLoading) {
@@ -30,4 +32,4 @@ export const Products = observer(() => {
             ))}
         </div>
     )
-});
+};

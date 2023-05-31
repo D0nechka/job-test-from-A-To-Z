@@ -1,4 +1,6 @@
 import { makeAutoObservable } from 'mobx';
+import { LOCAL_STORAGE_BASKET } from '../../constants/localStorage';
+import { parseToLocalStorage } from '../../utils/parseToLocalStorage';
 
 export class BasketStore {
     store = {
@@ -9,19 +11,37 @@ export class BasketStore {
         makeAutoObservable(this);
     }
 
-    addProduct(product) {
-        this.store.productsInBasket.push(product)
+    init() {
+        try {
+            const initBasket = JSON.parse(localStorage.getItem(LOCAL_STORAGE_BASKET))
+
+            if(initBasket?.length) {
+                this.store.productsInBasket = initBasket
+            }
+        } catch (e) {
+            localStorage.removeItem(LOCAL_STORAGE_BASKET)
+            return e
+        }
     }
 
-    handleDelete(index) {
-        this.store.productsInBasket.splice(index, 1)
+    addProduct(product) {
+        this.store.productsInBasket.push(product)
+        
+        localStorage.setItem(LOCAL_STORAGE_BASKET, parseToLocalStorage(this.store.productsInBasket))
     }
+
+    handleDelete(delId) {
+        this.store.productsInBasket = 
+            this.store.productsInBasket.filter(({product}) => product.delId !== delId)
+        localStorage.setItem(LOCAL_STORAGE_BASKET, parseToLocalStorage(this.store.productsInBasket))
+    }
+
 
     isInBasket(idProduct, idColor, idSize) {
         return !!this.store.productsInBasket.find((item) =>  
             String(item.product.id) === String(idProduct) &&
-            String(item.color.id) === String(idColor) &&
-            String(item.size.id) === String(idSize)
+            String(item.product.color.id) === String(idColor) &&
+            String(item.product.size.id) === String(idSize)
         )
     }
 }

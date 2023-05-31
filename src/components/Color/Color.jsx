@@ -1,17 +1,11 @@
-import { rootStore } from "../../store"
 import './style.css'
 
 export const Color = (props) => {
-    const {name, id, active} = props
-
-    const changeColor = () => {
-        rootStore.productStore.changeCurrentColor(id)
-        rootStore.productStore.changeCurrentSize(null)
-    }
+    const {name, id, active, handleChangeColor} = props
 
     return (
         <button 
-            onClick={changeColor} 
+            onClick={() => handleChangeColor(id)} 
             disabled={active} 
             className="color"
         >

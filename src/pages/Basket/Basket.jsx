@@ -15,16 +15,16 @@ export const Basket = observer(() => {
     return (
         <div className='basket-products'>
             <Link className='basket-link' to="/">К товарам</Link>
-            {productBasket.map(({product, size, color}, index) => (
+            {productBasket?.map(({product}, index) => (
                 <ProductBasketCard 
                     id={product.id}
-                    color={color.name}
-                    size={size.label}
-                    price={color.price}
+                    color={product.color.name}
+                    size={product.size.label}
+                    price={product.price}
                     name={product.name}
-                    img={color.images[0]}
-                    key={product.id}
-                    handleDelete={() => handleDelete(index)}
+                    img={product.image}
+                    key={`${product.id}__${index}`}
+                    handleDelete={() => handleDelete(product.delId)}
                 />
             ))}
         </div>
